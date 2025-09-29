@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  coalfield-fleet:
+    build: .
+    ports:
+      - "3000:3000"
+      - "8080:8080"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_WS_PORT=8080
+      - NEXT_PUBLIC_UPDATE_INTERVAL=2000
+    restart: unless-stopped
+    
+  # Optional: Add a reverse proxy for production
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - coalfield-fleet
+    restart: unless-stopped
