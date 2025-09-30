@@ -31,153 +31,59 @@ export interface Edge {
   current_trucks: number
 }
 
-// Shared truck data - consistent across all endpoints
+// Shared truck data - simplified for better tracking
 export let trucks: Truck[] = [
   {
-    truck_id: "T001",
+    truck_id: "TRUCK-1",
     lat: -25.7479,
     lon: 28.2293,
     status: "loaded",
     timestamp: new Date().toISOString(),
     is_tracking: false,
     network_info: {
-      router_id: "ROUTER_NORTH",
+      router_id: "ROUTER_MAIN",
       port: 8080,
-      signal_strength: 85,
+      signal_strength: 95,
       connection_status: "connected",
     },
     route_data: {
-      fuel_level: 75,
+      fuel_level: 85,
       engine_status: "running",
     },
   },
   {
-    truck_id: "T002",
+    truck_id: "TRUCK-2",
     lat: -25.7679,
     lon: 28.2493,
     status: "unloaded",
     timestamp: new Date().toISOString(),
     is_tracking: false,
     network_info: {
-      router_id: "ROUTER_NORTH",
-      port: 8081,
-      signal_strength: 92,
-      connection_status: "connected",
-    },
-    route_data: {
-      fuel_level: 68,
-      engine_status: "running",
-    },
-  },
-  {
-    truck_id: "T003",
-    lat: -25.7279,
-    lon: 28.2693,
-    status: "stopped",
-    timestamp: new Date().toISOString(),
-    is_tracking: false,
-    network_info: {
-      router_id: "ROUTER_SOUTH",
-      port: 8080,
-      signal_strength: 78,
-      connection_status: "weak",
-    },
-    route_data: {
-      fuel_level: 45,
-      engine_status: "stopped",
-    },
-  },
-  {
-    truck_id: "T004",
-    lat: -25.7879,
-    lon: 28.2093,
-    status: "loaded",
-    timestamp: new Date().toISOString(),
-    is_tracking: false,
-    network_info: {
-      router_id: "ROUTER_SOUTH",
-      port: 8081,
-      signal_strength: 65,
-      connection_status: "weak",
-    },
-    route_data: {
-      fuel_level: 82,
-      engine_status: "running",
-    },
-  },
-  {
-    truck_id: "T005",
-    lat: -25.7379,
-    lon: 28.2393,
-    status: "unloaded",
-    timestamp: new Date().toISOString(),
-    is_tracking: false,
-    network_info: {
-      router_id: "ROUTER_EAST",
-      port: 8080,
-      signal_strength: 95,
-      connection_status: "connected",
-    },
-    route_data: {
-      fuel_level: 91,
-      engine_status: "running",
-    },
-  },
-  {
-    truck_id: "T006",
-    lat: -25.7579,
-    lon: 28.2193,
-    status: "loaded",
-    timestamp: new Date().toISOString(),
-    is_tracking: false,
-    network_info: {
-      router_id: "ROUTER_EAST",
+      router_id: "ROUTER_MAIN",
       port: 8081,
       signal_strength: 88,
       connection_status: "connected",
     },
     route_data: {
-      fuel_level: 73,
+      fuel_level: 62,
       engine_status: "running",
     },
   },
 ]
 
-// Coalfield map data
+// Simplified coalfield map data for better clarity
 export const nodes: Node[] = [
-  { node_id: 1, lat: -25.7479, lon: 28.2293 }, // Loading Zone A
-  { node_id: 2, lat: -25.7679, lon: 28.2493 }, // Loading Zone B
-  { node_id: 3, lat: -25.7279, lon: 28.2693 }, // Dump Site A
-  { node_id: 4, lat: -25.7879, lon: 28.2093 }, // Dump Site B
-  { node_id: 5, lat: -25.7379, lon: 28.2393 }, // Junction A
-  { node_id: 6, lat: -25.7579, lon: 28.2193 }, // Junction B
-  { node_id: 7, lat: -25.7779, lon: 28.2593 }, // Maintenance
-  { node_id: 8, lat: -25.7179, lon: 28.2793 }, // Fuel Station
-  { node_id: 9, lat: -25.7979, lon: 28.1993 }, // Office
-  { node_id: 10, lat: -25.7079, lon: 28.2893 }, // Storage
-  { node_id: 11, lat: -25.7679, lon: 28.2093 }, // Checkpoint A
-  { node_id: 12, lat: -25.7379, lon: 28.2793 }, // Checkpoint B
+  { node_id: 1, lat: -25.7400, lon: 28.2200 }, // Loading Zone
+  { node_id: 2, lat: -25.7600, lon: 28.2400 }, // Main Junction
+  { node_id: 3, lat: -25.7300, lon: 28.2600 }, // Dump Site
+  { node_id: 4, lat: -25.7500, lon: 28.2300 }, // Fuel Station
 ]
 
 export let edges: Edge[] = [
-  { edge_id: 1, start_node: 1, end_node: 5, status: "Open", current_trucks: 0 },
-  { edge_id: 2, start_node: 2, end_node: 5, status: "Open", current_trucks: 0 },
-  { edge_id: 3, start_node: 5, end_node: 6, status: "Open", current_trucks: 0 },
-  { edge_id: 4, start_node: 6, end_node: 3, status: "Open", current_trucks: 0 },
-  { edge_id: 5, start_node: 6, end_node: 4, status: "Open", current_trucks: 0 },
-  { edge_id: 6, start_node: 1, end_node: 7, status: "Open", current_trucks: 0 },
-  { edge_id: 7, start_node: 2, end_node: 8, status: "Open", current_trucks: 0 },
-  { edge_id: 8, start_node: 3, end_node: 10, status: "Open", current_trucks: 0 },
-  { edge_id: 9, start_node: 4, end_node: 9, status: "Open", current_trucks: 0 },
-  { edge_id: 10, start_node: 7, end_node: 11, status: "Open", current_trucks: 0 },
-  { edge_id: 11, start_node: 8, end_node: 12, status: "Open", current_trucks: 0 },
-  { edge_id: 12, start_node: 9, end_node: 11, status: "Open", current_trucks: 0 },
-  { edge_id: 13, start_node: 10, end_node: 12, status: "Open", current_trucks: 0 },
-  { edge_id: 14, start_node: 11, end_node: 6, status: "Open", current_trucks: 0 },
-  { edge_id: 15, start_node: 12, end_node: 5, status: "Open", current_trucks: 0 },
-  { edge_id: 16, start_node: 5, end_node: 9, status: "Open", current_trucks: 0 },
-  { edge_id: 17, start_node: 6, end_node: 10, status: "Open", current_trucks: 0 },
-  { edge_id: 18, start_node: 7, end_node: 8, status: "Open", current_trucks: 0 },
+  { edge_id: 1, start_node: 1, end_node: 2, status: "Open", current_trucks: 0 }, // Loading to Junction
+  { edge_id: 2, start_node: 2, end_node: 3, status: "Open", current_trucks: 0 }, // Junction to Dump
+  { edge_id: 3, start_node: 2, end_node: 4, status: "Open", current_trucks: 0 }, // Junction to Fuel
+  { edge_id: 4, start_node: 4, end_node: 1, status: "Open", current_trucks: 0 }, // Fuel to Loading
 ]
 
 // Simulation parameters
