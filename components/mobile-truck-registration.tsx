@@ -13,6 +13,8 @@ export function MobileTruckRegistration({ onRegistered }: MobileTruckProps) {
   const [location, setLocation] = useState<{ lat: number; lon: number } | null>(null)
   const [isTracking, setIsTracking] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [battery, setBattery] = useState<number | null>(null)
+  const [charging, setCharging] = useState<boolean | null>(null)
 
   // Get current location
   const getCurrentLocation = (): Promise<{ lat: number; lon: number }> => {
@@ -46,6 +48,26 @@ export function MobileTruckRegistration({ onRegistered }: MobileTruckProps) {
       const currentLocation = await getCurrentLocation()
       setLocation(currentLocation)
 
+      // Try to get battery info (supported in some browsers)
+      try {
+        const navAny = navigator as any
+        if (navAny.getBattery) {
+          const batteryObj = await navAny.getBattery()
+          const levelPct = Math.round((batteryObj.level ?? 0) * 100)
+          setBattery(levelPct)
+          setCharging(!!batteryObj.charging)
+          // Listen for changes while component mounted
+          const levelHandler = () => setBattery(Math.round((batteryObj.level ?? 0) * 100))
+          const chargingHandler = () => setCharging(!!batteryObj.charging)
+          batteryObj.addEventListener('levelchange', levelHandler)
+          batteryObj.addEventListener('chargingchange', chargingHandler)
+          // Store to remove on unmount
+          ;(window as any).__batteryListeners = { batteryObj, levelHandler, chargingHandler }
+        }
+      } catch (e) {
+        // battery API not available; ignore gracefully
+      }
+
       const response = await fetch('/api/device-registration', {
         method: 'POST',
         headers: {
@@ -66,16 +88,30 @@ export function MobileTruckRegistration({ onRegistered }: MobileTruckProps) {
       
       if (result.success) {
         setIsRegistered(true)
-        setTruckData(result.truck_data)
-        onRegistered?.(result.truck_data)
+        const registeredTruck = { ...result.truck_data, battery_level: battery ?? undefined }
+        setTruckData(registeredTruck)
+        // Pass the truck object directly
+        onRegistered?.(registeredTruck)
         
         // Start location tracking automatically
-        startLocationTracking(result.truck_data.truck_id)
+        if (registeredTruck?.truck_id) {
+          startLocationTracking(registeredTruck.truck_id)
+        } else {
+          setError('Registration succeeded but truck_id is missing in response')
+        }
       } else {
         setError(result.error || 'Registration failed')
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error')
+      let message = 'Unknown error'
+      if (err instanceof GeolocationPositionError) {
+        if (err.code === err.PERMISSION_DENIED) message = 'Location permission denied. Please allow location access.'
+        else if (err.code === err.POSITION_UNAVAILABLE) message = 'Location unavailable. Try moving to an open area.'
+        else if (err.code === err.TIMEOUT) message = 'Location request timed out. Please try again.'
+      } else if (err instanceof Error) {
+        message = err.message
+      }
+      setError(message)
     }
   }
 
@@ -137,6 +173,11 @@ export function MobileTruckRegistration({ onRegistered }: MobileTruckProps) {
       if ((window as any).trackingInterval) {
         clearInterval((window as any).trackingInterval)
       }
+      const listeners = (window as any).__batteryListeners
+      if (listeners?.batteryObj) {
+        listeners.batteryObj.removeEventListener('levelchange', listeners.levelHandler)
+        listeners.batteryObj.removeEventListener('chargingchange', listeners.chargingHandler)
+      }
     }
   }, [])
 
@@ -176,6 +217,9 @@ export function MobileTruckRegistration({ onRegistered }: MobileTruckProps) {
                   <div><strong>Longitude:</strong> {location.lon.toFixed(6)}</div>
                 </>
               )}
+              {battery !== null && (
+                <div><strong>Battery:</strong> {battery}% {charging ? '(Charging)' : ''}</div>
+              )}
               <div className="flex items-center gap-2">
                 <strong>Tracking:</strong>
                 <Badge variant={isTracking ? "default" : "secondary"}>
@@ -187,7 +231,7 @@ export function MobileTruckRegistration({ onRegistered }: MobileTruckProps) {
             <div className="flex gap-2">
               {!isTracking ? (
                 <Button 
-                  onClick={() => startLocationTracking(truckData.truck_id)} 
+                  onClick={() => truckData?.truck_id ? startLocationTracking(truckData.truck_id) : setError('Missing truck_id')} 
                   className="flex-1"
                 >
                   ▶️ Start Tracking

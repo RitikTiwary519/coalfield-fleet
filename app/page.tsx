@@ -15,6 +15,8 @@ interface Truck {
   status: "loaded" | "unloaded" | "stopped"
   timestamp: string
   is_tracking: boolean
+  // Optional: phone battery level for MOBILE devices (0-100)
+  battery_level?: number
   network_info: {
     router_id: string
     port: number
@@ -126,15 +128,16 @@ export default function FleetDashboard() {
   }, [wsTrucks, mobileTrucks])
 
   // Handle mobile device registration
-  const handleMobileRegistered = (mobileData: any) => {
-    console.log('Mobile device registered:', mobileData)
+  const handleMobileRegistered = (truckData: any) => {
+    console.log('Mobile device registered:', truckData)
     const mobileTruck: Truck = {
-      truck_id: mobileData.truck_data.truck_id,
-      lat: mobileData.truck_data.lat || 0,
-      lon: mobileData.truck_data.lon || 0,
+      truck_id: truckData?.truck_id ?? truckData?.truck_data?.truck_id ?? `MOBILE_${Date.now()}`,
+      lat: truckData?.lat ?? truckData?.truck_data?.lat ?? 0,
+      lon: truckData?.lon ?? truckData?.truck_data?.lon ?? 0,
       status: "stopped" as const,
       timestamp: new Date().toISOString(),
       is_tracking: false,
+      battery_level: typeof truckData?.battery_level === 'number' ? Math.round(truckData.battery_level) : undefined,
       network_info: {
         router_id: "ROUTER_MAIN",
         port: 8080,
@@ -439,6 +442,13 @@ export default function FleetDashboard() {
       ctx.fillStyle = "#6b7280"
       ctx.font = "10px Arial, sans-serif"
       ctx.fillText(`⛽ ${truck.route_data.fuel_level.toFixed(0)}%`, pos.x, pos.y + 55)
+      
+      // Battery indicator for MOBILE devices if available
+      if (truck.truck_id.startsWith('MOBILE') && typeof truck.battery_level === 'number') {
+        ctx.fillStyle = "#6b7280"
+        ctx.font = "10px Arial, sans-serif"
+        ctx.fillText(`🔋 ${Math.round(truck.battery_level)}%`, pos.x, pos.y + 68)
+      }
     })
 
     // Draw optional legend

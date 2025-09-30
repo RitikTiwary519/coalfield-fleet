@@ -4,7 +4,8 @@ import { trucks, connectionStore, startTruckTracking } from "@/lib/shared-data"
 // Add a new truck dynamically
 export async function POST(request: NextRequest) {
   try {
-    const { action, device_info, location, router_id } = await request.json()
+    const body = await request.json()
+    const { action, device_info, location, router_id } = body
 
     if (action === "register_device") {
       // Generate new truck ID
@@ -46,7 +47,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (action === "update_location") {
-      const { truck_id, lat, lon } = await request.json()
+      const { truck_id, lat, lon } = body
       
       const truck = trucks.find(t => t.truck_id === truck_id)
       if (truck) {
